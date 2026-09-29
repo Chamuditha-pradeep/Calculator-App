@@ -1,50 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glassmorphism Calculator</title>
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prism Calc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+<body data-theme="basic">
+  <div class="glow glow-a" aria-hidden="true"></div>
+  <div class="glow glow-b" aria-hidden="true"></div>
 
-<body>
+  <main class="app">
+    <nav class="tabs" role="tablist" aria-label="Calculator modes">
+      <button class="tab active" role="tab" id="btn-basic" data-tab="basic" aria-selected="true" aria-controls="tab-basic"><span class="tab-icon">+−</span>Basic</button>
+      <button class="tab" role="tab" id="btn-scientific" data-tab="scientific" aria-selected="false" aria-controls="tab-scientific" tabindex="-1"><span class="tab-icon">π</span>Scientific</button>
+      <button class="tab" role="tab" id="btn-geometry" data-tab="geometry" aria-selected="false" aria-controls="tab-geometry" tabindex="-1"><span class="tab-icon">△</span>Geometry</button>
+      <button class="tab" role="tab" id="btn-statistics" data-tab="statistics" aria-selected="false" aria-controls="tab-statistics" tabindex="-1"><span class="tab-icon">∑</span>Statistics</button>
+      <button class="tab" role="tab" id="btn-converter" data-tab="converter" aria-selected="false" aria-controls="tab-converter" tabindex="-1"><span class="tab-icon">⇄</span>Converter</button>
+    </nav>
 
-    <div class="calculator">
+    <section class="panel-wrap">
 
-        <!-- Display -->
-        <div class="display">
-            <span id="display">0</span>
+      <!-- ================= BASIC ================= -->
+      <div class="panel active" id="tab-basic" role="tabpanel" aria-labelledby="btn-basic">
+        <div class="display" aria-live="polite">
+          <div class="expression" id="basic-expression"></div>
+          <div class="result" id="basic-result">0</div>
+        </div>
+        <div class="keys" id="basic-keys">
+          <button class="key fn" data-action="clear">C</button>
+          <button class="key fn" data-action="paren">( )</button>
+          <button class="key fn" data-action="backspace" aria-label="Backspace">⌫</button>
+          <button class="key op" data-value="÷" aria-label="Divide">÷</button>
+
+          <button class="key" data-value="7">7</button>
+          <button class="key" data-value="8">8</button>
+          <button class="key" data-value="9">9</button>
+          <button class="key op" data-value="×" aria-label="Multiply">×</button>
+
+          <button class="key" data-value="4">4</button>
+          <button class="key" data-value="5">5</button>
+          <button class="key" data-value="6">6</button>
+          <button class="key op" data-value="−" aria-label="Subtract">−</button>
+
+          <button class="key" data-value="1">1</button>
+          <button class="key" data-value="2">2</button>
+          <button class="key" data-value="3">3</button>
+          <button class="key op" data-value="+" aria-label="Add">+</button>
+
+          <button class="key fn" data-action="negate" aria-label="Toggle sign">±</button>
+          <button class="key" data-value="0">0</button>
+          <button class="key" data-value=".">.</button>
+          <button class="key equals" data-action="equals" aria-label="Equals">=</button>
+        </div>
+      </div>
+
+      <!-- ================= SCIENTIFIC ================= -->
+      <div class="panel" id="tab-scientific" role="tabpanel" aria-labelledby="btn-scientific">
+        <div class="display" aria-live="polite">
+          <div class="expression" id="sci-expression"></div>
+          <div class="result" id="sci-result">0</div>
         </div>
 
-        <!-- Buttons -->
-        <div class="buttons">
-
-            <button class="clear">C</button>
-            <button class="operator">/</button>
-            <button class="operator">*</button>
-            <button class="operator">-</button>
-
-            <button>7</button>
-            <button>8</button>
-            <button>9</button>
-            <button class="operator">+</button>
-
-            <button>4</button>
-            <button>5</button>
-            <button>6</button>
-            <button class="equal">=</button>
-
-            <button>1</button>
-            <button>2</button>
-            <button>3</button>
-
-            <button class="zero">0</button>
-
+        <div class="inputs">
+          <label class="field"><span>x</span>
+            <input type="text" id="sci-x" inputmode="decimal" autocomplete="off" placeholder="0">
+          </label>
+          <label class="field"><span>y (for x<sup>y</sup>)</span>
+            <input type="text" id="sci-y" inputmode="decimal" autocomplete="off" placeholder="0">
+          </label>
+          <label class="field"><span>Angle unit</span>
+            <select id="sci-angle">
+              <option value="deg">Degrees</option>
+              <option value="rad">Radians</option>
+            </select>
+          </label>
         </div>
 
-    </div>
+        <div class="sci-body">
+          <div class="keys sci-keys" id="sci-keys">
+            <button class="key op" data-fn="square" aria-label="Square">x<sup>2</sup></button>
+            <button class="key op" data-fn="sqrt" aria-label="Square root">√x</button>
+            <button class="key op" data-fn="power" aria-label="x to the power y">x<sup>y</sup></button>
+            <button class="key op" data-fn="abs" aria-label="Absolute value">|x|</button>
 
-<script src="script.js"></script>
+            <button class="key op" data-fn="log">log</button>
+            <button class="key op" data-fn="ln">ln</button>
+            <button class="key op" data-fn="fact" aria-label="Factorial">n!</button>
+            <button class="key fn" data-fn="pi" aria-label="Insert pi">π</button>
+
+            <button class="key" data-fn="sin">sin</button>
+            <button class="key" data-fn="cos">cos</button>
+            <button class="key" data-fn="tan">tan</button>
+            <button class="key fn" data-fn="clear">C</button>
+
+            <button class="key" data-fn="asin" aria-label="Inverse sine">sin<sup>−1</sup></button>
+            <button class="key" data-fn="acos" aria-label="Inverse cosine">cos<sup>−1</sup></button>
+            <button class="key" data-fn="atan" aria-label="Inverse tangent">tan<sup>−1</sup></button>
+            <button class="key equals" data-fn="ans" aria-label="Use last result as x">Ans→x</button>
+          </div>
+
+          <div class="keys sci-pad" id="sci-pad" aria-label="Number pad">
+            <button class="key" data-pad="7">7</button>
+            <button class="key" data-pad="8">8</button>
+            <button class="key" data-pad="9">9</button>
+            <button class="key" data-pad="4">4</button>
+            <button class="key" data-pad="5">5</button>
+            <button class="key" data-pad="6">6</button>
+            <button class="key" data-pad="1">1</button>
+            <button class="key" data-pad="2">2</button>
+            <button class="key" data-pad="3">3</button>
+            <button class="key fn" data-pad="neg" aria-label="Toggle sign">±</button>
+            <button class="key" data-pad="0">0</button>
+            <button class="key" data-pad=".">.</button>
+            <button class="key fn wide" data-pad="back" aria-label="Backspace">⌫</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= GEOMETRY ================= -->
+      <div class="panel" id="tab-geometry" role="tabpanel" aria-labelledby="btn-geometry">
+        <div class="display list-display" aria-live="polite">
+          <div class="list-title" id="geo-title">Square</div>
+          <div class="list-rows" id="geo-results"></div>
+        </div>
+
+        <div class="seg" id="geo-dim" role="group" aria-label="Shape type">
+          <button class="active" data-dim="2d" aria-pressed="true">2D shapes</button>
+          <button data-dim="3d" aria-pressed="false">3D solids</button>
+        </div>
+
+        <div class="chip-grid" id="geo-shapes"></div>
+        <div class="geo-inputs" id="geo-inputs"></div>
+
+        <div class="bottom-row">
+          <label class="field"><span>Unit</span>
+            <select id="geo-unit">
+              <option value="cm">cm</option>
+              <option value="mm">mm</option>
+              <option value="m">m</option>
+              <option value="km">km</option>
+              <option value="in">in</option>
+              <option value="ft">ft</option>
+              <option value="none">no unit</option>
+            </select>
+          </label>
+          <button class="key equals" id="geo-calc">Calculate</button>
+          <button class="key fn" id="geo-clear">Clear</button>
+        </div>
+      </div>
+
+      <!-- ================= STATISTICS ================= -->
+      <div class="panel" id="tab-statistics" role="tabpanel" aria-labelledby="btn-statistics">
+        <div class="display list-display" aria-live="polite">
+          <div class="list-title" id="stat-title">Data set</div>
+          <div class="list-rows stat-rows" id="stat-results"></div>
+        </div>
+
+        <label class="field"><span>Numbers (separate with commas or spaces)</span>
+          <input type="text" id="stat-input" autocomplete="off" placeholder="e.g. 4, 8, 15, 16, 23, 42">
+        </label>
+
+        <div class="bottom-row">
+          <label class="field"><span>Data type</span>
+            <select id="stat-type">
+              <option value="sample">Sample (n − 1)</option>
+              <option value="population">Population (n)</option>
+            </select>
+          </label>
+          <button class="key equals" id="stat-calc">Calculate</button>
+          <button class="key fn" id="stat-clear">Clear</button>
+        </div>
+      </div>
+
+      <!-- ================= CONVERTER ================= -->
+      <div class="panel" id="tab-converter" role="tabpanel" aria-labelledby="btn-converter">
+        <div class="display" aria-live="polite">
+          <div class="expression" id="conv-expression"></div>
+          <div class="result" id="conv-result">0</div>
+        </div>
+
+        <div class="chip-grid conv-cats" id="conv-cats"></div>
+
+        <div class="conv-row">
+          <label class="field conv-value"><span>Value</span>
+            <input type="text" id="conv-value" inputmode="decimal" autocomplete="off" placeholder="0">
+          </label>
+          <label class="field"><span>From</span>
+            <select id="conv-from"></select>
+          </label>
+          <button class="key fn conv-swap" id="conv-swap" aria-label="Swap units">⇄</button>
+          <label class="field"><span>To</span>
+            <select id="conv-to"></select>
+          </label>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
