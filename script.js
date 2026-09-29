@@ -346,11 +346,98 @@ const ScientificCalculator = (() => {
     } else {
       s = String(n);
     }
+    return s.replace(/^-/, "−");
+  }
 
-    const secondNumber = parseFloat(currentInput);
+  const fmtIn = n => format(n); // show inputs the same way as results
 
-    if (isNaN(secondNumber)) {
+  function readNumber(el, name) {
+    if (el.value.trim() === "") throw new Error(`Enter a value for ${name}`);
+    const n = Number(el.value);
+    if (!Number.isFinite(n)) throw new Error(`${name} is not a valid number`);
+    return n;
+  }
+
+  function factorial(n) {
+    if (!Number.isInteger(n) || n < 0) throw new Error("n! needs a whole number ≥ 0");
+    if (n > 170) throw new Error("n! is too large (max n = 170)");
+    let r = 1;
+    for (let i = 2; i <= n; i++) r *= i;
+    return r;
+  }
+
+  /* ---- each function returns { label, value } ---- */
+  const FUNCTIONS = {
+    square: x => ({ label: `${fmtIn(x)}²`, value: x * x }),
+    sqrt: x => {
+      if (x < 0) throw new Error("√x needs x ≥ 0");
+      return { label: `√${fmtIn(x)}`, value: Math.sqrt(x) };
+    },
+    power: (x, _, y) => {
+      const v = Math.pow(x, y);
+      if (!Number.isFinite(v)) throw new Error("Result is undefined or too large");
+      return { label: `${fmtIn(x)}^${fmtIn(y)}`, value: v };
+    },
+    abs: x => ({ label: `|${fmtIn(x)}|`, value: Math.abs(x) }),
+    log: x => {
+      if (x <= 0) throw new Error("log needs x > 0");
+      return { label: `log(${fmtIn(x)})`, value: Math.log10(x) };
+    },
+    ln: x => {
+      if (x <= 0) throw new Error("ln needs x > 0");
+      return { label: `ln(${fmtIn(x)})`, value: Math.log(x) };
+    },
+    fact: x => ({ label: `${fmtIn(x)}!`, value: factorial(x) }),
+    sin: x => ({ label: `sin(${fmtIn(x)}${unitSym()})`, value: Math.sin(toRad(x)) }),
+    cos: x => ({ label: `cos(${fmtIn(x)}${unitSym()})`, value: Math.cos(toRad(x)) }),
+    tan: x => {
+      const r = toRad(x);
+      if (Math.abs(Math.cos(r)) < 1e-12) throw new Error("tan is undefined here");
+      return { label: `tan(${fmtIn(x)}${unitSym()})`, value: Math.tan(r) };
+    },
+    asin: x => {
+      if (x < -1 || x > 1) throw new Error("sin⁻¹ needs −1 ≤ x ≤ 1");
+      return { label: `sin⁻¹(${fmtIn(x)})`, value: fromRad(Math.asin(x)), unit: true };
+    },
+    acos: x => {
+      if (x < -1 || x > 1) throw new Error("cos⁻¹ needs −1 ≤ x ≤ 1");
+      return { label: `cos⁻¹(${fmtIn(x)})`, value: fromRad(Math.acos(x)), unit: true };
+    },
+    atan: x => ({ label: `tan⁻¹(${fmtIn(x)})`, value: fromRad(Math.atan(x)), unit: true }),
+  };
+
+  /* ---- display ---- */
+  function showResult(label, value, unit) {
+    const v = clean(value);
+    lastResult = v;
+    exprEl.textContent = `${label} =`;
+    resultEl.textContent = format(v) + (unit ? unitSym() : "");
+    resultEl.classList.remove("error");
+    resultEl.classList.remove("pop"); void resultEl.offsetWidth; resultEl.classList.add("pop");
+  }
+
+  function showError(msg) {
+    exprEl.textContent = "";
+    resultEl.textContent = msg;
+    resultEl.classList.add("error");
+  }
+
+  function reset() {
+    xEl.value = ""; yEl.value = "";
+    lastResult = null;
+    exprEl.textContent = "";
+    resultEl.textContent = "0";
+    resultEl.classList.remove("error");
+  }
+
+  /* ---- button handling ---- */
+  function run(name) {
+    try {
+      if (name === "clear") return reset();
+      if (name === "pi") { xEl.value = String(Math.PI); return; }
       if (name === "ans") {
+        if (lastResult === null) throw new Error("No result to reuse yet");
+        xEl.value = String(lastResult);
         return;
       }
       const x = readNumber(xEl, "x");
@@ -360,66 +447,183 @@ const ScientificCalculator = (() => {
     } catch (err) {
       showError(err.message);
     }
+  }
 
-    const result = calculate(
-        firstNumber,
-        secondNumber,
-        operator
-    );
+  /* ---- number pad: types into whichever field (x or y) was used last ---- */
+  let activeEl = xEl;
+  const markActive = el => {
+    activeEl = el;
+    xEl.classList.toggle("active-field", el === xEl);
+    yEl.classList.toggle("active-field", el === yEl);
+  };
+  [xEl, yEl].forEach(el => {
+    el.addEventListener("focus", () => markActive(el));
+    el.addEventListener("click", () => markActive(el));
+    // keep only characters a number can contain (digits . - + e)
+    el.addEventListener("input", () => { el.value = el.value.replace(/[^0-9.eE+\-]/g, ""); });
+  });
+  markActive(xEl);
 
-    currentInput = String(result);
+  function pad(action) {
+    const el = activeEl;
+    let v = el.value;
+    if (action === "back") v = v.slice(0, -1);
+    else if (action === "neg") v = v.startsWith("-") ? v.slice(1) : "-" + v;
+    else if (action === ".") {
+      if (v.includes(".") || /e/i.test(v)) return;
+      v += v === "" || v === "-" ? "0." : ".";
+    } else v += action;
+    el.value = v;
+  }
 
-    firstNumber = null;
-    operator = null;
-    waitingForSecondNumber = false;
+  // pointerdown preventDefault keeps focus on the field (no keyboard flicker on phones)
+  root.querySelector("#sci-pad").addEventListener("pointerdown", e => { if (e.target.closest(".key")) e.preventDefault(); });
+  root.querySelector("#sci-pad").addEventListener("click", e => {
+    const key = e.target.closest(".key");
+    if (key && key.dataset.pad !== undefined) pad(key.dataset.pad);
+  });
 
-    updateDisplay();
-}
+  root.querySelector("#sci-keys").addEventListener("click", e => {
+    const key = e.target.closest(".key");
+    if (key && key.dataset.fn) run(key.dataset.fn);
+  });
 
+  // Pressing Enter in the x field jumps to the y field
+  xEl.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); yEl.focus(); markActive(yEl); } });
 
-// Clear calculator
-function clearCalculator() {
+  // Laptop keyboard: with no field focused, digits go into the field last used (x or y)
+  Tabs.onKeys("scientific", e => {
+    if (Util.inField(e.target) || Util.isButtonPress(e)) return;
+    const k = e.key;
+    if (/^\d$/.test(k) || k === ".") pad(k);
+    else if (k === "-") pad("neg");
+    else if (k === "Backspace") pad("back");
+    else return;
+    activeEl.focus();
+    e.preventDefault();
+  });
 
-    currentInput = "0";
-    firstNumber = null;
-    operator = null;
-    waitingForSecondNumber = false;
+  return { reset };
+})();
 
-    updateDisplay();
-}
+/* ============ Geometry calculator ============ */
+const GeometryCalculator = (() => {
+  const root = document.getElementById("tab-geometry");
+  const titleEl = root.querySelector("#geo-title");
+  const resultsEl = root.querySelector("#geo-results");
+  const shapesEl = root.querySelector("#geo-shapes");
+  const inputsEl = root.querySelector("#geo-inputs");
+  const unitEl = root.querySelector("#geo-unit");
+  const dimBtns = [...root.querySelectorAll("#geo-dim button")];
 
+  const PI = Math.PI;
+  const LEN = "len", AREA = "area", VOL = "vol";   // decides the unit suffix (cm, cm², cm³)
 
-// Handle button clicks
-buttons.forEach(button => {
+  /* Each shape: its input fields and a calc() that returns [label, value, kind] rows */
+  const SHAPES = {
+    "2d": [
+      { id: "square", name: "Square", fields: [["a", "Side"]],
+        calc: ({ a }) => [["Area", a * a, AREA], ["Perimeter", 4 * a, LEN]] },
+      { id: "rectangle", name: "Rectangle", fields: [["l", "Length"], ["w", "Width"]],
+        calc: ({ l, w }) => [["Area", l * w, AREA], ["Perimeter", 2 * (l + w), LEN]] },
+      { id: "circle", name: "Circle", fields: [["r", "Radius"]],
+        calc: ({ r }) => [["Area", PI * r * r, AREA], ["Circumference (perimeter)", 2 * PI * r, LEN]] },
+      { id: "triangle", name: "Triangle", fields: [["a", "Side a"], ["b", "Side b"], ["c", "Side c"]],
+        calc: ({ a, b, c }) => {
+          if (a + b <= c || a + c <= b || b + c <= a)
+            throw new Error("These sides can't form a triangle: each side must be shorter than the other two added together.");
+          const s = (a + b + c) / 2;                                   // Heron's formula
+          return [["Area", Math.sqrt(s * (s - a) * (s - b) * (s - c)), AREA], ["Perimeter", a + b + c, LEN]];
+        } },
+      { id: "parallelogram", name: "Parallelogram", fields: [["b", "Base (b)"], ["s", "Slant side (s)"], ["h", "Height (h)"]],
+        calc: ({ b, s, h }) => {
+          if (h > s) throw new Error("The height can't be longer than the slant side.");
+          return [["Area", b * h, AREA], ["Perimeter", 2 * (b + s), LEN]];
+        } },
+      { id: "trapezoid", name: "Trapezoid", fields: [["a", "Top (a)"], ["b", "Bottom (b)"], ["c", "Left leg (c)"], ["d", "Right leg (d)"], ["h", "Height (h)"]],
+        calc: ({ a, b, c, d, h }) => {
+          if (h > c || h > d) throw new Error("The height can't be longer than a leg.");
+          return [["Area", ((a + b) / 2) * h, AREA], ["Perimeter", a + b + c + d, LEN]];
+        } },
+    ],
+    "3d": [
+      { id: "cube", name: "Cube", fields: [["a", "Edge"]],
+        calc: ({ a }) => [["Volume", a ** 3, VOL], ["Surface area", 6 * a * a, AREA]] },
+      { id: "cuboid", name: "Cuboid", fields: [["l", "Length"], ["w", "Width"], ["h", "Height"]],
+        calc: ({ l, w, h }) => [["Volume", l * w * h, VOL], ["Surface area", 2 * (l * w + l * h + w * h), AREA]] },
+      { id: "sphere", name: "Sphere", fields: [["r", "Radius"]],
+        calc: ({ r }) => [["Volume", (4 / 3) * PI * r ** 3, VOL], ["Surface area", 4 * PI * r * r, AREA]] },
+      { id: "cylinder", name: "Cylinder", fields: [["r", "Radius"], ["h", "Height"]],
+        calc: ({ r, h }) => [["Volume", PI * r * r * h, VOL], ["Surface area", 2 * PI * r * (r + h), AREA]] },
+      { id: "cone", name: "Cone", fields: [["r", "Radius"], ["h", "Height"]],
+        calc: ({ r, h }) => {
+          const l = Math.sqrt(r * r + h * h);                          // slant height
+          return [["Volume", (PI * r * r * h) / 3, VOL], ["Surface area", PI * r * (r + l), AREA], ["Slant height", l, LEN]];
+        } },
+      { id: "pyramid", name: "Square pyramid", fields: [["b", "Base side"], ["h", "Height"]],
+        calc: ({ b, h }) => {
+          const s = Math.sqrt(h * h + (b / 2) ** 2);                   // slant height of a face
+          return [["Volume", (b * b * h) / 3, VOL], ["Surface area", b * b + 2 * b * s, AREA], ["Slant height", s, LEN]];
+        } },
+    ],
+  };
 
-    button.addEventListener("click", () => {
+  let dim = "2d";
+  let shape = SHAPES["2d"][0];
 
-        const value = button.textContent;
+  const inputs = () => [...inputsEl.querySelectorAll("input")];
 
-        // Number
-        if (!isNaN(value)) {
-            inputNumber(value);
-        }
+  const showHint = () => Util.note(resultsEl, "Enter the measurements below, then press Calculate.", "list-hint");
 
-        // Clear
-        else if (value === "C") {
-            clearCalculator();
-        }
+  function showResults(rows) {
+    const unit = unitEl.value === "none" ? "" : unitEl.value;
+    Util.rows(resultsEl, rows.map(([label, value, kind]) => {
+      const suffix = unit ? ` ${unit}${kind === AREA ? "²" : kind === VOL ? "³" : ""}` : "";
+      return [label, Util.format(value) + suffix];
+    }));
+  }
 
-        // Operators
-        else if (
-            value === "+" ||
-            value === "-" ||
-            value === "*" ||
-            value === "/"
-        ) {
-            chooseOperator(value);
-        }
+  function renderShapes() {
+    shapesEl.replaceChildren(...SHAPES[dim].map(s => {
+      const b = document.createElement("button");
+      b.className = "key chip" + (s.id === shape.id ? " selected" : "");
+      b.dataset.shape = s.id;
+      b.textContent = s.name;
+      return b;
+    }));
+  }
 
-        // Equal
-        else if (value === "=") {
-            calculateResult();
-        }
+  function renderInputs() {
+    inputsEl.replaceChildren(...shape.fields.map(([key, label]) => {
+      const wrap = document.createElement("label");
+      wrap.className = "field";
+      const span = document.createElement("span");
+      span.textContent = label;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.inputMode = "decimal";
+      input.autocomplete = "off";
+      input.placeholder = "0";
+      input.dataset.key = key;
+      wrap.append(span, input);
+      return wrap;
+    }));
+  }
+
+  function selectShape(id) {
+    shape = SHAPES[dim].find(s => s.id === id);
+    titleEl.textContent = shape.name;
+    renderShapes();
+    renderInputs();
+    showHint();
+  }
+
+  function setDim(d) {
+    dim = d;
+    dimBtns.forEach(b => {
+      const on = b.dataset.dim === d;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on);
     });
     selectShape(SHAPES[d][0].id);
   }
