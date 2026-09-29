@@ -133,22 +133,41 @@
         </div>
 
         <div class="chip-grid" id="geo-shapes"></div>
-        <div class="geo-inputs" id="geo-inputs"></div>
+        <div class="geo-work">
+          <div class="geo-left">
+            <div class="geo-inputs" id="geo-inputs"></div>
 
-        <div class="bottom-row">
-          <label class="field"><span>Unit</span>
-            <select id="geo-unit">
-              <option value="cm">cm</option>
-              <option value="mm">mm</option>
-              <option value="m">m</option>
-              <option value="km">km</option>
-              <option value="in">in</option>
-              <option value="ft">ft</option>
-              <option value="none">no unit</option>
-            </select>
-          </label>
-          <button class="key equals" id="geo-calc">Calculate</button>
-          <button class="key fn" id="geo-clear">Clear</button>
+            <div class="bottom-row">
+              <label class="field"><span>Unit</span>
+                <select id="geo-unit">
+                  <option value="cm">cm</option>
+                  <option value="mm">mm</option>
+                  <option value="m">m</option>
+                  <option value="km">km</option>
+                  <option value="in">in</option>
+                  <option value="ft">ft</option>
+                  <option value="none">no unit</option>
+                </select>
+              </label>
+              <button class="key equals" id="geo-calc">Calculate</button>
+              <button class="key fn" id="geo-clear">Clear</button>
+            </div>
+          </div>
+
+          <div class="keys num-pad" id="geo-pad" aria-label="Number pad">
+            <button class="key" data-pad="7">7</button>
+            <button class="key" data-pad="8">8</button>
+            <button class="key" data-pad="9">9</button>
+            <button class="key" data-pad="4">4</button>
+            <button class="key" data-pad="5">5</button>
+            <button class="key" data-pad="6">6</button>
+            <button class="key" data-pad="1">1</button>
+            <button class="key" data-pad="2">2</button>
+            <button class="key" data-pad="3">3</button>
+            <button class="key" data-pad=".">.</button>
+            <button class="key" data-pad="0">0</button>
+            <button class="key fn" data-pad="back" aria-label="Backspace">⌫</button>
+          </div>
         </div>
       </div>
 
@@ -162,6 +181,24 @@
         <label class="field"><span>Numbers (separate with commas or spaces)</span>
           <input type="text" id="stat-input" autocomplete="off" placeholder="e.g. 4, 8, 15, 16, 23, 42">
         </label>
+
+        <div class="keys num-pad pad-4" id="stat-pad" aria-label="Number pad">
+          <button class="key" data-pad="7">7</button>
+          <button class="key" data-pad="8">8</button>
+          <button class="key" data-pad="9">9</button>
+          <button class="key fn" data-pad="back" aria-label="Backspace">⌫</button>
+          <button class="key" data-pad="4">4</button>
+          <button class="key" data-pad="5">5</button>
+          <button class="key" data-pad="6">6</button>
+          <button class="key op" data-pad="," aria-label="Comma">,</button>
+          <button class="key" data-pad="1">1</button>
+          <button class="key" data-pad="2">2</button>
+          <button class="key" data-pad="3">3</button>
+          <button class="key op" data-pad="minus" aria-label="Minus sign">−</button>
+          <button class="key" data-pad="0">0</button>
+          <button class="key" data-pad=".">.</button>
+          <button class="key op span-2" data-pad="space" aria-label="Space">space</button>
+        </div>
 
         <div class="bottom-row">
           <label class="field"><span>Data type</span>
@@ -195,6 +232,23 @@
           <label class="field"><span>To</span>
             <select id="conv-to"></select>
           </label>
+        </div>
+
+        <div class="keys num-pad pad-4" id="conv-pad" aria-label="Number pad">
+          <button class="key" data-pad="7">7</button>
+          <button class="key" data-pad="8">8</button>
+          <button class="key" data-pad="9">9</button>
+          <button class="key fn" data-pad="back" aria-label="Backspace">⌫</button>
+          <button class="key" data-pad="4">4</button>
+          <button class="key" data-pad="5">5</button>
+          <button class="key" data-pad="6">6</button>
+          <button class="key fn" data-pad="clear" aria-label="Clear value">C</button>
+          <button class="key" data-pad="1">1</button>
+          <button class="key" data-pad="2">2</button>
+          <button class="key" data-pad="3">3</button>
+          <button class="key op" data-pad="neg" aria-label="Toggle sign">±</button>
+          <button class="key span-2" data-pad="0">0</button>
+          <button class="key span-2" data-pad=".">.</button>
         </div>
       </div>
 

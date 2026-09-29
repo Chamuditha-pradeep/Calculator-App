@@ -21,6 +21,32 @@ const Util = {
     el.dispatchEvent(new Event("input", { bubbles: true }));
   },
 
+  // On-screen keypad → text field. Actions: a digit, ".", ",", "minus", "space", "neg", "back", "clear"
+  padInput(el, action) {
+    let v = el.value;
+    const token = v.match(/[^\s,;]*$/)[0];                 // the number currently being typed
+    if (action === "back") v = v.slice(0, -1);
+    else if (action === "clear") v = "";
+    else if (action === "neg") v = v.startsWith("-") ? v.slice(1) : "-" + v;
+    else if (action === "minus") { if (token === "") v += "-"; }
+    else if (action === ".") { if (token.includes(".")) return; v += token === "" || token === "-" ? "0." : "."; }
+    else if (action === ",") { if (v.trim() !== "" && !/[\s,;]$/.test(v)) v += ", "; }
+    else if (action === "space") { if (v !== "" && !/[\s,;]$/.test(v)) v += " "; }
+    else v += action;                                       // a digit
+    el.value = v;
+    el.dispatchEvent(new Event("input", { bubbles: true })); // runs the field's own sanitiser / live update
+  },
+
+  // Connect a keypad: pressing a key edits whatever field getTarget() returns
+  wirePad(padEl, getTarget) {
+    padEl.addEventListener("pointerdown", e => { if (e.target.closest(".key")) e.preventDefault(); }); // keep focus where it is
+    padEl.addEventListener("click", e => {
+      const key = e.target.closest(".key");
+      const el = key && getTarget();
+      if (el) Util.padInput(el, key.dataset.pad);
+    });
+  },
+
   // 1234.5678 → "1,234.5678"; keeps 10 significant digits, uses ×10^n for huge/tiny values
   format(n) {
     if (!Number.isFinite(n)) return "—";
@@ -573,6 +599,14 @@ const GeometryCalculator = (() => {
 
   const inputs = () => [...inputsEl.querySelectorAll("input")];
 
+  // the box the number pad types into (the one you clicked last)
+  let activeInput = null;
+  function markActive(el) {
+    activeInput = el;
+    inputs().forEach(i => i.classList.toggle("active-field", i === el));
+  }
+  const padTarget = () => (inputs().includes(activeInput) ? activeInput : inputs()[0]);
+
   const showHint = () => Util.note(resultsEl, "Enter the measurements below, then press Calculate.", "list-hint");
 
   function showResults(rows) {
@@ -608,6 +642,7 @@ const GeometryCalculator = (() => {
       wrap.append(span, input);
       return wrap;
     }));
+    markActive(inputs()[0]);
   }
 
   function selectShape(id) {
@@ -669,18 +704,19 @@ const GeometryCalculator = (() => {
   });
   inputsEl.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); calculate(); } });
 
+  inputsEl.addEventListener("focusin", e => { if (e.target.matches("input")) markActive(e.target); });
+  Util.wirePad(root.querySelector("#geo-pad"), padTarget);
+
   root.querySelector("#geo-calc").addEventListener("click", calculate);
   root.querySelector("#geo-clear").addEventListener("click", clearAll);
   unitEl.addEventListener("change", () => { if (resultsEl.querySelector(".list-row")) calculate(); });
 
-  // Laptop keyboard: with no field focused, digits go into the first empty measurement box
+  // Laptop keyboard: with no field focused, digits go into the box the pad is using
   Tabs.onKeys("geometry", e => {
     if (Util.inField(e.target) || Util.isButtonPress(e)) return;
     if (!/^[\d.]$/.test(e.key) && e.key !== "Backspace") return;
-    const list = inputs();
-    const target = list.find(i => i.value === "") || list[list.length - 1];
-    if (e.key === "Backspace") Util.backspace(list.filter(i => i.value !== "").pop() || target);
-    else Util.insert(target, e.key);
+    if (e.key === "Backspace") Util.backspace(padTarget());
+    else Util.insert(padTarget(), e.key);
     e.preventDefault();
   });
 
@@ -766,6 +802,7 @@ const StatisticsCalculator = (() => {
   inputEl.addEventListener("input", () => { inputEl.value = inputEl.value.replace(/[^0-9.,;\s\-]/g, ""); });
   inputEl.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); calculate(); } });
   typeEl.addEventListener("change", () => { if (resultsEl.querySelector(".list-row")) calculate(); });
+  Util.wirePad(root.querySelector("#stat-pad"), () => inputEl);
   root.querySelector("#stat-calc").addEventListener("click", calculate);
   root.querySelector("#stat-clear").addEventListener("click", clearAll);
 
@@ -898,6 +935,7 @@ const ConverterCalculator = (() => {
     valueEl.value = (neg ? "-" : "") + v;
     update();
   });
+  Util.wirePad(root.querySelector("#conv-pad"), () => valueEl);
   fromEl.addEventListener("change", update);
   toEl.addEventListener("change", update);
 
