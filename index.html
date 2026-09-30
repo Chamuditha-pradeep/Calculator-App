@@ -9,6 +9,10 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="basic">
+  <div class="lang-gate" id="lang-gate" hidden>
+    <div class="lang-card"><h1>Prism Calc</h1><p>භාෂාව තෝරන්න · Choose your language</p>
+      <button class="key equals" data-lang="si">සිංහල</button><button class="key equals" data-lang="en">English</button></div>
+  </div>
   <div class="glow glow-a" aria-hidden="true"></div>
   <div class="glow glow-b" aria-hidden="true"></div>
 
@@ -19,6 +23,9 @@
       <button class="tab" role="tab" id="btn-geometry" data-tab="geometry" aria-selected="false" aria-controls="tab-geometry" tabindex="-1"><span class="tab-icon">△</span>Geometry</button>
       <button class="tab" role="tab" id="btn-statistics" data-tab="statistics" aria-selected="false" aria-controls="tab-statistics" tabindex="-1"><span class="tab-icon">∑</span>Statistics</button>
       <button class="tab" role="tab" id="btn-converter" data-tab="converter" aria-selected="false" aria-controls="tab-converter" tabindex="-1"><span class="tab-icon">⇄</span>Converter</button>
+      <button class="tab" role="tab" id="btn-matrix" data-tab="matrix" aria-selected="false" aria-controls="tab-matrix" tabindex="-1"><span class="tab-icon">▦</span>Matrix</button>
+      <button class="tab" role="tab" id="btn-tools" data-tab="tools" aria-selected="false" aria-controls="tab-tools" tabindex="-1"><span class="tab-icon">✚</span>More</button>
+      <button class="lang-switch" id="lang-switch" type="button"><span class="tab-icon">🌐</span><span id="lang-label">සිංහල</span></button>
     </nav>
 
     <section class="panel-wrap">
@@ -249,6 +256,119 @@
           <button class="key op" data-pad="neg" aria-label="Toggle sign">±</button>
           <button class="key span-2" data-pad="0">0</button>
           <button class="key span-2" data-pad=".">.</button>
+        </div>
+      </div>
+
+
+      <!-- ================= MATRIX ================= -->
+      <div class="panel" id="tab-matrix" role="tabpanel" aria-labelledby="btn-matrix">
+        <div class="display mx-display" aria-live="polite">
+          <div class="list-title" id="mx-title">Result</div>
+          <div class="mx-result" id="mx-result"></div>
+          <div class="mx-use" id="mx-use" hidden>
+            <button class="mx-mini" id="mx-use-a">Use as A</button>
+            <button class="mx-mini" id="mx-use-b">Use as B</button>
+          </div>
+        </div>
+
+        <div class="mx-editors">
+          <section class="mx-card" data-mx="A" aria-label="Matrix A">
+            <div class="mx-head">
+              <strong class="mx-name">Matrix A</strong>
+              <div class="mx-size">
+                <span>Rows</span>
+                <button class="mx-step" data-step="rows-" aria-label="Fewer rows in A">−</button><output data-out="rows">2</output><button class="mx-step" data-step="rows+" aria-label="More rows in A">+</button>
+                <span>Cols</span>
+                <button class="mx-step" data-step="cols-" aria-label="Fewer columns in A">−</button><output data-out="cols">2</output><button class="mx-step" data-step="cols+" aria-label="More columns in A">+</button>
+              </div>
+            </div>
+            <div class="mx-scroll"><div class="mx-grid" data-grid></div></div>
+            <div class="mx-tools">
+              <button class="mx-mini" data-tool="clear">Clear</button>
+              <button class="mx-mini" data-tool="identity">Identity</button>
+            </div>
+      
+
+    </section>
+
+          <section class="mx-card" data-mx="B" aria-label="Matrix B">
+            <div class="mx-head">
+              <strong class="mx-name">Matrix B</strong>
+              <div class="mx-size">
+                <span>Rows</span>
+                <button class="mx-step" data-step="rows-" aria-label="Fewer rows in B">−</button><output data-out="rows">2</output><button class="mx-step" data-step="rows+" aria-label="More rows in B">+</button>
+                <span>Cols</span>
+                <button class="mx-step" data-step="cols-" aria-label="Fewer columns in B">−</button><output data-out="cols">2</output><button class="mx-step" data-step="cols+" aria-label="More columns in B">+</button>
+              </div>
+            </div>
+            <div class="mx-scroll"><div class="mx-grid" data-grid></div></div>
+            <div class="mx-tools">
+              <button class="mx-mini" data-tool="clear">Clear</button>
+              <button class="mx-mini" data-tool="identity">Identity</button>
+            </div>
+          </section>
+        </div>
+
+        <div class="mx-work">
+          <div class="mx-left">
+            <div class="mx-options">
+              <div class="seg" id="mx-target" role="group" aria-label="Single-matrix operations apply to">
+                <button class="active" data-target="A" aria-pressed="true">On A</button>
+                <button data-target="B" aria-pressed="false">On B</button>
+              </div>
+              <label class="field"><span>k or n value</span>
+                <input type="text" id="mx-param" inputmode="decimal" autocomplete="off" placeholder="e.g. 2 or 1/2">
+              </label>
+              <label class="field"><span>Show as</span>
+                <select id="mx-format">
+                  <option value="decimal">Decimals</option>
+                  <option value="fraction">Fractions</option>
+                </select>
+              </label>
+            </div>
+            <div class="mx-ops" id="mx-ops"></div>
+          </div>
+
+          <div class="keys num-pad pad-4" id="mx-pad" aria-label="Number pad">
+            <button class="key" data-pad="7">7</button>
+            <button class="key" data-pad="8">8</button>
+            <button class="key" data-pad="9">9</button>
+            <button class="key fn" data-pad="back" aria-label="Backspace">⌫</button>
+            <button class="key" data-pad="4">4</button>
+            <button class="key" data-pad="5">5</button>
+            <button class="key" data-pad="6">6</button>
+            <button class="key op" data-pad="neg" aria-label="Toggle sign">±</button>
+            <button class="key" data-pad="1">1</button>
+            <button class="key" data-pad="2">2</button>
+            <button class="key" data-pad="3">3</button>
+            <button class="key op" data-pad="/" aria-label="Fraction slash">/</button>
+            <button class="key" data-pad="0">0</button>
+            <button class="key" data-pad=".">.</button>
+            <button class="key fn" data-pad="left" aria-label="Previous cell">◀</button>
+            <button class="key fn" data-pad="right" aria-label="Next cell">▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= MORE (everyday maths + probability) ================= -->
+      <div class="panel" id="tab-tools" role="tabpanel" aria-labelledby="btn-tools">
+        <div class="display list-display" aria-live="polite">
+          <div class="list-title" id="tl-title">Percentage</div>
+          <div class="list-rows" id="tl-results"></div>
+        </div>
+        <div class="chip-grid" id="tl-list"></div>
+        <div class="geo-work">
+          <div class="geo-left">
+            <div class="geo-inputs" id="tl-inputs"></div>
+            <div class="bottom-row tl-bottom"><button class="key equals" id="tl-calc">Calculate</button><button class="key fn" id="tl-clear">Clear</button></div>
+          </div>
+          <div class="keys num-pad" id="tl-pad" aria-label="Number pad">
+            <button class="key" data-pad="7">7</button><button class="key" data-pad="8">8</button><button class="key" data-pad="9">9</button>
+            <button class="key" data-pad="4">4</button><button class="key" data-pad="5">5</button><button class="key" data-pad="6">6</button>
+            <button class="key" data-pad="1">1</button><button class="key" data-pad="2">2</button><button class="key" data-pad="3">3</button>
+            <button class="key" data-pad=".">.</button><button class="key" data-pad="0">0</button><button class="key fn" data-pad="back" aria-label="Backspace">⌫</button>
+            <button class="key fn" data-pad="neg" aria-label="Toggle sign" style="grid-column:1/-1">±</button>
+          </div>
         </div>
       </div>
 
